@@ -32,7 +32,9 @@ slotta_width = 2;//0.1
 //slotta hole length
 slotta_length = 18;//0.1
 //slotta type
-slotta_type = "0"; // [0:None, 1:Parallel Center, 2:Parallel 3/4, 3:Diagonal]
+slotta_type = "0"; // [0:None, 1:Parallel Center, 2:Parallel 3/4, 3:Diagonal, 4:Cavalry]
+//slotta gap (cavalry type only)
+slotta_gap = 2.5;//0.1
 
 module tray(offset, zOffset, height, base_width, base_length, inset) {
     
@@ -103,7 +105,20 @@ module slotta (base_width, base_length,slotta_width,slotta_height, slotta_type, 
             cube(size = [slotta_length,slotta_width,slotta_height+0.2]);
                     
         }
-    }    
+    }
+
+    if(slotta_type == "4"){
+        
+        translate( 
+            [(base_width / 2) - (slotta_width / 2) - slotta_gap,(base_length - slotta_length)/2, -0.1]
+        )
+        cube(size = [slotta_width,slotta_length,slotta_height+0.2]);
+
+        translate( 
+            [(base_width / 2) - (slotta_width / 2) + slotta_gap,(base_length - slotta_length)/2, -0.1]
+        )
+        cube(size = [slotta_width,slotta_length,slotta_height+0.2]);
+    }
 }
 
 module magnets_holes (base_width, base_length, magnets_height, magnets_diameter) {   
