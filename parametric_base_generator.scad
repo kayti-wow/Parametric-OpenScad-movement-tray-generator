@@ -21,16 +21,20 @@ base_length = 25;
 height_offset = 1.3;
 //Inset of the top of the tray: greater the value greater the slope of the tray
 inset = 1;
-//magnets height (if greater than 0.1 will generate the magnet holders)
+//magnets height 
 magnets_height = 0.1;
 //magnets diameter
 magnets_diameter = 0.1;
+//magnets type
+magnets_type = "0"; // [0:None, 1:Auto]
 
 base_type = "0"; // [0:Hollow, 1:Solid]
 //slotta hole width
 slotta_width = 2;//0.1
 //slotta hole length
 slotta_length = 18;//0.1
+//slotta hole depth
+slotta_depth = 4;//0.1
 //slotta type
 slotta_type = "0"; // [0:None, 1:Parallel Center, 2:Parallel 3/4, 3:Diagonal, 4:Cavalry]
 //slotta gap (cavalry type only)
@@ -76,18 +80,17 @@ module tray(offset, zOffset, height, base_width, base_length, inset) {
            
 }
 
-module slotta (base_width, base_length,slotta_width,slotta_height, slotta_type, offset,inset) {   
-
+module slotta (base_width, base_length,slotta_width,slotta_height,slotta_type) {
     if(slotta_type == "1"){
         translate( 
-            [(base_width - slotta_length)/2, base_width/2, -0.1]
+            [(base_width - slotta_length)/2, base_width/2, height]
         )
         cube(size = [slotta_length,slotta_width,slotta_height+0.2]);
     }
     
     if(slotta_type == "2"){
         translate( 
-            [(base_width - slotta_length)/2, base_width/4, -0.1]
+            [(base_width - slotta_length)/2, base_width/4, height]
         )
         cube(size = [slotta_length,slotta_width,slotta_height+0.2]);
     }
@@ -97,7 +100,7 @@ module slotta (base_width, base_length,slotta_width,slotta_height, slotta_type, 
         let(cathetus_slotta_width = slotta_width/sqrt(2),cathetus_slotta_lenght = slotta_length/sqrt(2)){
             echo(">>>>",cathetus_slotta_lenght)
             translate( 
-                [(base_width/2)-(cathetus_slotta_lenght/2), (base_length/2) -(cathetus_slotta_lenght/2), -0.1]
+                [(base_width/2)-(cathetus_slotta_lenght/2), (base_length/2) -(cathetus_slotta_lenght/2), height]
             )
 
             rotate(45)
@@ -110,22 +113,22 @@ module slotta (base_width, base_length,slotta_width,slotta_height, slotta_type, 
     if(slotta_type == "4"){
         
         translate( 
-            [(base_width / 2) - (slotta_width / 2) - slotta_gap,(base_length - slotta_length)/2, -0.1]
+            [(base_width / 2) - (slotta_width / 2) - slotta_gap,(base_length - slotta_length)/2, height - slotta_height - 0.1]
         )
         cube(size = [slotta_width,slotta_length,slotta_height+0.2]);
 
         translate( 
-            [(base_width / 2) - (slotta_width / 2) + slotta_gap,(base_length - slotta_length)/2, -0.1]
+            [(base_width / 2) - (slotta_width / 2) + slotta_gap,(base_length - slotta_length)/2, height - slotta_height - 0.1]
         )
         cube(size = [slotta_width,slotta_length,slotta_height+0.2]);
     }
 }
 
-module magnets_holes (base_width, base_length, magnets_height, magnets_diameter) {   
+module magnets_holes (base_width, base_length, magnets_height, magnets_diameter, z_offset = -0.1) {   
     translate( 
         [base_width/2,
         base_length/2, 
-        -0.1]
+        z_offset]
     )
     cylinder(d = magnets_diameter, h = magnets_height+0.01,$fn=30);
 }
@@ -142,11 +145,23 @@ difference(){
         }   
     }
     
-    if (magnets_height > 0.1){     
+    if (magnets_type == "1" && base_type == "1" && magnets_height > 0.1){     
         magnets_holes (base_width, base_length, magnets_height, magnets_diameter);            
     }
-    
-    slotta(base_width,base_length,slotta_width,height,slotta_type,height_offset,inset);
-
+      
+    slotta(base_width,base_length,slotta_width,slotta_depth+0.01,slotta_type);
 }
+
+if(magnets_type == "1"  && base_type == "0" && magnets_height > 0.1){
+    if(slotta_type != "0"){
+        difference(){
+            difference() {
+                magnets_holes (base_width, base_length, height - 0.1, magnets_diameter + (2 * height_offset) + slotta_gap * 2);        
+                magnets_holes (base_width, base_length, magnets_height + 0.2, magnets_diameter, -0.2);        
+            }
+            slotta(base_width,base_length,slotta_width,slotta_depth,slotta_type);
+        }
+    }
+}
+
 
